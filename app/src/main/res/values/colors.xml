@@ -11,8 +11,7 @@
     <!--    主页背景色-->
     <color name="main_background">#FFFFFF</color>
 
-    <!--    ivory-->
-    <color name="ivory">#C9937D</color>
+    <color name="login">#89BEA8</color>
 
     <!--    支付宝蓝-->
     <color name="a_li">#027AFF</color>

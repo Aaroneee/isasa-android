@@ -73,7 +73,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         loginBinding = LoginBinding.inflate(getLayoutInflater());
         setContentView(loginBinding.getRoot());
-        StatusBarUtil.setColor(this, getColor(R.color.ivory));
+        StatusBarUtil.setColor(this, getColor(R.color.login));
 
         setControllerDate();
     }

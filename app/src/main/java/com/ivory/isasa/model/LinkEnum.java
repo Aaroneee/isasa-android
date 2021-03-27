@@ -1,10 +1,11 @@
 package com.ivory.isasa.model;
 
 public enum LinkEnum {
-    INTERFACE_LINK("http://192.168.10.212:8090"),
+//    INTERFACE_LINK("http://192.168.10.212:8090"),
+    INTERFACE_LINK("http://42.192.238.161:8080"),
 
-    VIEW_LINK("http://192.168.10.212:8088");
-//    VIEW_LINK("http://42.192.238.161");
+//    VIEW_LINK("http://192.168.10.212:8088");
+    VIEW_LINK("http://42.192.238.161");
 
 
 
