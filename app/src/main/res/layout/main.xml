@@ -11,13 +11,13 @@
         android:orientation="vertical"
         android:background="@color/white">
 
-        <LinearLayout
+        <WebView
             android:id="@+id/parent_view"
             android:fadingEdge="none"
             android:overScrollMode="never"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
-        </LinearLayout>
+        </WebView>
     </LinearLayout>
 </layout>
