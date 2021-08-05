@@ -13,6 +13,7 @@ import android.webkit.ValueCallback;
 import com.hjq.permissions.OnPermissionCallback;
 import com.hjq.permissions.Permission;
 import com.hjq.permissions.XXPermissions;
+import com.ivory.isasa.util.UpdateApp;
 import com.just.agentweb.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -40,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private MainBinding mainBinding;
 
     private ValueCallback<Uri[]> uploadMessageAboveL;
-    private  Uri photoUri;
+    private Uri photoUri;
 
     private String currentPhotoPath;
 
@@ -49,11 +50,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         mainBinding = MainBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
+        //检测更新
+        new UpdateApp(this,this);
         StatusBarUtil.setColor(this, getColor(R.color.white));
         StatusBarUtil.setDarkMode(this);
         String tenantCrop = SharedPreferencesUtil.getString(this, "tenantCrop");
         String empId = String.valueOf(SharedPreferencesUtil.getInt(this, "id"));
         boolean loginStatus = SharedPreferencesUtil.getBoolean(this, "loginStatus");
+        String token = SharedPreferencesUtil.getString(this, "token");
 
         //判断登陆状态
         if (!loginStatus) {
@@ -73,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         agentWeb.getWebCreator().getWebView().setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
-                agentWeb.getJsAccessEntrace().quickCallJs("setLocalStorage", tenantCrop, empId);
+                agentWeb.getJsAccessEntrace().quickCallJs("setLocalStorage", tenantCrop, empId, token);
             }
         });
 
@@ -89,37 +93,37 @@ public class MainActivity extends AppCompatActivity {
             new AlertView("上传图片", null, "取消", null,
                     new String[]{"拍照", "从相册中选择"},
                     MainActivity.this, AlertView.Style.ActionSheet, (o, position) -> {
-                        //相册
-                        if (position == 1) {
-                            Intent aIntent = new Intent();
-                            aIntent.setType("image/*");
-                            aIntent.setAction("android.intent.action.GET_CONTENT");
-                            aIntent.addCategory("android.intent.category.OPENABLE");
-                            startActivityForResult(aIntent, 100);
-                        }
-                        //相机
-                        else if(position==0){
-                            Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                            File photoFile = null;
+                //相册
+                if (position == 1) {
+                    Intent aIntent = new Intent();
+                    aIntent.setType("image/*");
+                    aIntent.setAction("android.intent.action.GET_CONTENT");
+                    aIntent.addCategory("android.intent.category.OPENABLE");
+                    startActivityForResult(aIntent, 100);
+                }
+                //相机
+                else if (position == 0) {
+                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    File photoFile = null;
 
-                            try {
-                                photoFile = createImageFile();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            if (photoFile != null) {
-                                photoUri = FileProvider.getUriForFile(MainActivity.this,
-                                        "com.ivory.isasa.fileprovider",
-                                        photoFile);
-                                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                                startActivityForResult(takePictureIntent, 200);
-                            }
-                        }
-                        //取消
-                        else if(position==-1){
-                            filePathCallback.onReceiveValue(null);
-                        }
-                    }).show();
+                    try {
+                        photoFile = createImageFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    if (photoFile != null) {
+                        photoUri = FileProvider.getUriForFile(MainActivity.this,
+                                "com.ivory.isasa.fileprovider",
+                                photoFile);
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                        startActivityForResult(takePictureIntent, 200);
+                    }
+                }
+                //取消
+                else if (position == -1) {
+                    filePathCallback.onReceiveValue(null);
+                }
+            }).show();
             return true;
         }
     };
@@ -132,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
      */
     @JavascriptInterface
     public void logOut() {
-        Toasty.success(this, "调用成功").show();
         SharedPreferencesUtil.clear(this);
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);
@@ -154,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent resultData) {
         Uri[] results = null;
-        if (requestCode==100){
+        if (requestCode == 100) {
             if (resultData != null) {
                 String dataString = resultData.getDataString();
                 ClipData clipData = resultData.getClipData();
@@ -169,12 +172,12 @@ public class MainActivity extends AppCompatActivity {
                     results = new Uri[]{Uri.parse(dataString)};
             }
             uploadMessageAboveL.onReceiveValue(results);
-        }else if (requestCode==200){
-            if (resultCode==-1){
-                if (photoUri!=null){
-                    results= new Uri[]{photoUri};
-                }else if (currentPhotoPath!=null){
-                    results= new Uri[]{Uri.parse(currentPhotoPath)};
+        } else if (requestCode == 200) {
+            if (resultCode == -1) {
+                if (photoUri != null) {
+                    results = new Uri[]{photoUri};
+                } else if (currentPhotoPath != null) {
+                    results = new Uri[]{Uri.parse(currentPhotoPath)};
                 }
             }
             uploadMessageAboveL.onReceiveValue(results);
@@ -196,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
         return image;
     }
 
-    public void getPermissions(){
+    public void getPermissions() {
         XXPermissions.with(this)
                 // 申请安装包权限
                 //.permission(Permission.REQUEST_INSTALL_PACKAGES)
@@ -219,8 +222,8 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onDenied(List<String> permissions, boolean never) {
-                        if (permissions.contains(Permission.CAMERA)){
-                            Toasty.success(MainActivity.this,"请授予APP相机权限,在上传图片时会用到").show();
+                        if (permissions.contains(Permission.CAMERA)) {
+                            Toasty.success(MainActivity.this, "请授予APP相机权限,在上传图片时会用到").show();
                         }
                     }
                 });

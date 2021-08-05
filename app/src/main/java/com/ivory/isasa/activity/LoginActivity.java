@@ -45,7 +45,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 Toasty.error(this,resultInfo.getMsg()).show();
                 return false;
             }
-            getEmpInfo();
+            String token=String.valueOf(resultInfo.getData());
+            SharedPreferencesUtil.putString(this,"token", token);
+            getEmpInfo(token);
         }
         else if (msg.what==2){
             Emp emp= (Emp) msg.obj;
@@ -119,11 +121,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
      * @Author: Aaron
      * @Date: 2021/3/16 14:30
      */
-    public void getEmpInfo(){
+    public void getEmpInfo(String token){
         new Thread(()->{
             ParameterMap<String,Object> parameterMap=new ParameterMap<>();
             parameterMap.put("phone",et_account.getText());
-            String  result = RequestUtil.requestGet(LinkEnum.INTERFACE_LINK.getLink()+"/emp/getEmpDetails",parameterMap);
+            parameterMap.put("token",token);
+            String  result = RequestUtil.requestGet(LinkEnum.INTERFACE_LINK.getLink()+"/login/getEmpDetails",parameterMap);
             Message message=new Message();
             message.what=2;
             message.obj=JsonUtil.jsonStr2Object(result, Emp.class);
